@@ -57,6 +57,7 @@ Hooks.once("init", () => {
   game.settings.register(MOD, "travar", { ...base, name: "Travar a posicao", hint: "Impede de arrastar a barra sem querer.", type: Boolean, default: false });
   game.settings.register(MOD, "travarJogadores", { scope: "world", config: true, onChange: () => montar(), name: "Travar a barra dos jogadores", hint: "Impede que os jogadores arrastem a barra de Medo deles. So o mestre muda. O seu proprio 'Travar a posicao' continua pessoal.", type: Boolean, default: true });
   game.settings.register(MOD, "pos", { scope: "client", config: false, type: Object, default: {} });
+  game.settings.register(MOD, "esconderDanoErro", { scope: "world", config: true, name: "Nao rolar dano quando o ataque erra", hint: "Se o ataque nao acertou o alvo, o sistema nao rola o dano (so ele e pulado: o Medo, os custos e o resto da acao continuam normais). Precisa de alvo selecionado antes do ataque. Vale para todos os jogadores.", type: Boolean, default: true });
 });
 
 /* ---------------- Interface ---------------- */
@@ -215,9 +216,37 @@ function habilitarArrasto(el) {
   el.addEventListener("pointercancel", fim);
 }
 
+/* ---------------- Dano so quando o ataque acerta ---------------- */
+// O Daggerheart rola o dano mesmo quando o ataque erra (so nao aplica no alvo). Aqui a etapa de dano e pulada
+// quando o sistema ja sabe que o ataque errou (config.roll.success === false). Pular so essa etapa NAO interrompe a acao:
+// o Medo, os custos e o restante continuam sendo gravados. O botao de dano do chat (force = true) nao e afetado.
+const ALVO_DANO = "game.system.api.fields.ActionFields.DamageField.execute";
+function pularDanoSeErrou(wrapped, ...args) {
+  try {
+    const [config, , force] = args;
+    if (!force && game.settings.get(MOD, "esconderDanoErro") && config?.roll?.success === false) return undefined;
+  } catch (e) { console.warn(MOD, "verificacao de dano falhou; seguindo o fluxo normal", e); }
+  return wrapped(...args);
+}
+function instalarFiltroDeDano() {
+  const campo = game.system?.api?.fields?.ActionFields?.DamageField;
+  if (typeof campo?.execute !== "function") {
+    console.warn(MOD, "DamageField.execute nao encontrado; o ajuste de dano nao foi instalado (versao do Daggerheart diferente?).");
+    if (game.user.isGM) ui.notifications.warn("Trono Carmesim: Medo: nao foi possivel instalar o ajuste de dano (versao do Daggerheart diferente). O resto do modulo funciona normalmente.");
+    return;
+  }
+  if (globalThis.libWrapper) {
+    libWrapper.register(MOD, ALVO_DANO, function (wrapped, ...args) { return pularDanoSeErrou.call(this, (...a) => wrapped.apply(this, a), ...args); }, "WRAPPER");
+  } else {
+    const original = campo.execute;
+    campo.execute = function (...args) { return pularDanoSeErrou.call(this, (...a) => original.apply(this, a), ...args); };
+  }
+}
+
 /* ---------------- Ganchos ---------------- */
 Hooks.once("ready", () => {
   montar();
+  instalarFiltroDeDano();
   window.addEventListener("resize", () => { const el = document.getElementById("tc-medo"); if (el && !el.hidden) { ajustarLargura(el); posicionar(el); } });
   // Macro de emergencia: TCMedo.reset()  (volta a barra para o topo, centralizada)
   window.TCMedo = {
