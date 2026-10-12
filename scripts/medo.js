@@ -220,27 +220,23 @@ function habilitarArrasto(el) {
 // O Daggerheart rola o dano mesmo quando o ataque erra (so nao aplica no alvo). Aqui a etapa de dano e pulada
 // quando o sistema ja sabe que o ataque errou (config.roll.success === false). Pular so essa etapa NAO interrompe a acao:
 // o Medo, os custos e o restante continuam sendo gravados. O botao de dano do chat (force = true) nao e afetado.
-const ALVO_DANO = "game.system.api.fields.ActionFields.DamageField.execute";
-function pularDanoSeErrou(wrapped, ...args) {
-  try {
-    const [config, , force] = args;
-    if (!force && game.settings.get(MOD, "esconderDanoErro") && config?.roll?.success === false) return undefined;
-  } catch (e) { console.warn(MOD, "verificacao de dano falhou; seguindo o fluxo normal", e); }
-  return wrapped(...args);
-}
+// A troca e feita na lista de etapas da propria acao (preUseAction), porque o sistema guarda essa lista pronta.
 function instalarFiltroDeDano() {
-  const campo = game.system?.api?.fields?.ActionFields?.DamageField;
-  if (typeof campo?.execute !== "function") {
-    console.warn(MOD, "DamageField.execute nao encontrado; o ajuste de dano nao foi instalado (versao do Daggerheart diferente?).");
-    if (game.user.isGM) ui.notifications.warn("Trono Carmesim: Medo: nao foi possivel instalar o ajuste de dano (versao do Daggerheart diferente). O resto do modulo funciona normalmente.");
-    return;
-  }
-  if (globalThis.libWrapper) {
-    libWrapper.register(MOD, ALVO_DANO, function (wrapped, ...args) { return pularDanoSeErrou.call(this, (...a) => wrapped.apply(this, a), ...args); }, "WRAPPER");
-  } else {
-    const original = campo.execute;
-    campo.execute = function (...args) { return pularDanoSeErrou.call(this, (...a) => original.apply(this, a), ...args); };
-  }
+  Hooks.on("daggerheart.preUseAction", (acao) => {
+    try {
+      const etapa = acao?.workflow?.get?.("damage");
+      if (!etapa || etapa.tcFiltro) return;
+      const original = etapa.execute;
+      etapa.execute = function (config, ...resto) {
+        const [, force] = resto;
+        try {
+          if (!force && game.settings.get(MOD, "esconderDanoErro") && config?.roll?.success === false) return undefined;
+        } catch (e) { console.warn(MOD, "verificacao de dano falhou; seguindo o fluxo normal", e); }
+        return original.call(this, config, ...resto);
+      };
+      etapa.tcFiltro = true;
+    } catch (e) { console.warn(MOD, "nao foi possivel instalar o ajuste de dano nesta acao", e); }
+  });
 }
 
 /* ---------------- Ganchos ---------------- */
