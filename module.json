@@ -1,0 +1,11 @@
+{
+  "id": "trono-carmesim-medo",
+  "title": "Trono Carmesim: Medo",
+  "description": "Barra de Medo do Daggerheart com o tema da campanha: uma fileira de olhos de Groetus que se abrem conforme o Medo do mestre sobe. Sincroniza com o Medo do sistema, tem tamanho ajustavel nas configuracoes e nunca sai da tela.",
+  "version": "1.0.0",
+  "compatibility": { "minimum": "13", "verified": "14" },
+  "authors": [ { "name": "Campanha Trono Carmesim" } ],
+  "esmodules": [ "scripts/medo.js" ],
+  "styles": [ "styles/medo.css" ],
+  "relationships": { "systems": [ { "id": "daggerheart", "type": "system", "compatibility": {} } ] }
+}
