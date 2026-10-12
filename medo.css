@@ -1,0 +1,107 @@
+/* Trono Carmesim: Medo. Tamanhos vem de --tc-h / --tc-w / --tc-gap (definidos pelo script). */
+#tc-medo {
+  position: fixed;
+  z-index: 90;                    /* acima do Lobby (80), abaixo das janelas do Foundry (100+) */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;            /* nunca ocupa a tela inteira: o contrario disso fazia o tracker antigo sair da tela */
+  max-width: 100vw;
+  padding: 4px 6px;
+  border-radius: 14px;
+  background: none;               /* sem fundo por padrao; ligue 'Fundo escuro' nas configuracoes se quiser */
+  border: 1px solid transparent;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+#tc-medo.com-fundo {
+  padding: 6px 14px;
+  background: linear-gradient(180deg, rgba(20, 14, 12, .78), rgba(10, 7, 6, .78));
+  border-color: rgba(155, 28, 46, .55);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .55), inset 0 0 14px rgba(155, 28, 46, .18);
+}
+#tc-medo[hidden] { display: none; }
+#tc-medo.arrastando { cursor: grabbing; }
+#tc-medo.travado { cursor: default; }
+
+.tc-trilho {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: url("../assets/barra.png") center / 100% 13px no-repeat;
+}
+
+.tc-olho + .tc-olho { margin-left: var(--tc-gap, 2px); }
+.tc-olho {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--tc-w, 60px);
+  height: var(--tc-h, 90px);
+}
+.tc-olho img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  transition: opacity .6s ease;
+}
+.tc-olho .tc-aberto { opacity: 0; }
+.tc-olho.ligado .tc-aberto { opacity: 1; }
+.tc-olho.ligado .tc-fechado { opacity: 0; }
+.tc-olho:not(.ligado) .tc-fechado { opacity: .9; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .7)); }
+#tc-medo.gm .tc-olho { cursor: pointer; }
+
+/* brilho dos olhos abertos */
+#tc-medo:not(.sem-brilho) .tc-olho.ligado .tc-aberto {
+  filter: drop-shadow(0 0 7px rgba(200, 40, 60, .85));
+  animation: tc-pulso 3.2s ease-in-out infinite;
+}
+@keyframes tc-pulso {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(200, 40, 60, .6)); }
+  50%      { filter: drop-shadow(0 0 12px rgba(230, 60, 80, .95)); }
+}
+
+/* um olho abre / fecha */
+#tc-medo:not(.sem-brilho) .tc-olho.abrindo { animation: tc-abre .7s ease-out; }
+#tc-medo:not(.sem-brilho) .tc-olho.fechando { animation: tc-fecha .5s ease-in; }
+@keyframes tc-abre {
+  0%   { transform: scale(.8); filter: brightness(2.2); }
+  55%  { transform: scale(1.18); }
+  100% { transform: scale(1); filter: none; }
+}
+@keyframes tc-fecha {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(.88); }
+  100% { transform: scale(1); }
+}
+/* a barra treme quando o Medo sobe */
+#tc-medo.tremor { animation: tc-treme .45s linear; }
+@keyframes tc-treme {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-3px, 1px); }
+  35% { transform: translate(3px, -1px); }
+  55% { transform: translate(-2px, -1px); }
+  75% { transform: translate(2px, 1px); }
+}
+
+/* botoes + e - (so o mestre ve) */
+.tc-btn {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  line-height: 1;
+  font: 700 18px/1 var(--font-primary, sans-serif);
+  color: #f2e6d2;
+  background: linear-gradient(180deg, #5b1420, #2e0b11);
+  border: 1px solid rgba(211, 166, 74, .7);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tc-btn:hover { background: linear-gradient(180deg, #7a1c2c, #3d0f17); color: #fff; }
+
+/* esconde a barra de Medo do proprio sistema (nao a de outros modulos) */
+body.tc-medo-sem-sistema #resources:not(:hover):not(.minimized) { display: none !important; }
