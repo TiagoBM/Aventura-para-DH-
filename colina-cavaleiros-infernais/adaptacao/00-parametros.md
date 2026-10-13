@@ -21,7 +21,7 @@ O Cap. 1 é um prólogo curto e não sobe de nível. Isso deixa os 4 capítulos 
 | Cap. 3 | 3 | 2 | 3 a 4 |
 | Cap. 4 | 4 | 2 | 5 |
 
-Observação: o Daggerheart tem 10 níveis em 4 tiers (nível 1 = Tier 1; 2 a 4 = Tier 2; 5 a 7 = Tier 3; 8 a 10 = Tier 4). Esta aventura cabe quase toda no Tier 1/2, o que combina com o PF2e níveis 1 a 5. **Conferir esses limites de tier no SRD antes de adotar.**
+Confirmado no SRD: Tier 1 = nível 1; Tier 2 = níveis 2 a 4; Tier 3 = 5 a 7; Tier 4 = 8 a 10.
 
 ## Princípios de design (para decidir dúvidas)
 1. **O significado vence a mecânica.** Se uma cena do livro existe para fazer o grupo sentir X, a versão DH tem que fazer sentir X, mesmo com regras diferentes.
@@ -49,7 +49,7 @@ Os personagens de teste também servem de gabarito para ajustar a dificuldade de
 - Este repositório: `colina-cavaleiros-infernais/extracao/` (material de origem) e `adaptacao/` (produto).
 
 ## Pendências (ficha de acompanhamento)
-- [ ] Conferir no SRD: limites dos tiers, fórmula de pontos de batalha, custos por tipo de adversário.
+- [x] Conferir no SRD: tiers, pontos de batalha, custos (feito, ver `01-equivalencias.md` v0.2).
 - [ ] Obter as fichas que faltam do PDF (Voz, Warbal, Anadi, bestiário novo).
 - [ ] Extrair os mapas do PDF.
 - [ ] Criar os 4 personagens de teste.
